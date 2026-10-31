@@ -40,17 +40,17 @@ describe('Shell navigation', () => {
 
   it('claimant', async () => {
     signedInAs('tan@example.com', 'CLAIMANT');
-    expect(await nav()).toEqual(['My claims', 'Report an incident', 'Notifications']);
+    expect(await nav()).toEqual(['My claims', 'Report an incident', 'AI assistant', 'Notifications']);
   });
 
   it('officer', async () => {
     signedInAs('officer-1', 'OFFICER');
-    expect(await nav()).toEqual(['Intake queue', 'My workload', 'Notifications']);
+    expect(await nav()).toEqual(['Intake queue', 'My workload', 'AI assistant', 'Notifications']);
   });
 
   it('manager', async () => {
     signedInAs('manager-1', 'MANAGER');
-    expect(await nav()).toEqual(['Dashboard', 'Intake queue', 'Officer workload', 'Team performance', 'SLA breaches', 'Notifications']);
+    expect(await nav()).toEqual(['Dashboard', 'Intake queue', 'Officer workload', 'Live agents', 'Team performance', 'SLA breaches', 'Notifications']);
   });
 });
 

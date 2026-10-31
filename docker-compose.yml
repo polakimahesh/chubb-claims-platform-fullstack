@@ -53,6 +53,9 @@ services:
       <<: *service-env
       DB_URL: jdbc:postgresql://postgres:5432/claims
       DOCUMENTS_DIR: /data/documents
+      # AI assistant: with no value here, GEMINI_API_KEY is passed through from your shell or .env only when it is set,
+      # otherwise the key in application.yml applies. (An empty value would blank that key.) Never commit a real key.
+      GEMINI_API_KEY:
     volumes: ["claims-documents:/data/documents"]
     ports: ["8081:8081"]
     depends_on: *depends

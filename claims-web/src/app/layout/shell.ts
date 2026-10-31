@@ -29,6 +29,7 @@ const NAV: NavItem[] = [
   { label: 'Intake queue', icon: 'inbox', link: '/queue', roles: ['OFFICER', 'MANAGER'], group: 'Claims' },
   { label: 'My workload', icon: 'assignment_ind', link: '/workload', roles: ['OFFICER'], group: 'Claims' },
   { label: 'Officer workload', icon: 'assignment_ind', link: '/workload', roles: ['MANAGER'], group: 'Claims' },
+  { label: 'AI assistant', icon: 'auto_awesome', link: '/assistant', roles: ['CLAIMANT', 'OFFICER'], group: 'Claims' },
   { label: 'Live agents', icon: 'smart_toy', link: '/agents', roles: ['MANAGER'], group: 'Insights' },
   { label: 'Team performance', icon: 'groups', link: '/team', roles: ['MANAGER'], group: 'Insights' },
   { label: 'SLA breaches', icon: 'timer_off', link: '/sla', roles: ['MANAGER'], group: 'Insights' },

@@ -169,3 +169,22 @@ export interface Notification {
   body: string;
   createdAt: string;
 }
+
+// ---------- AI assistant (POST /api/agent/chat) ----------
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+/** One claim operation the assistant carried out for the user. */
+export interface AssistantAction {
+  tool: string;
+  summary: string;
+  ok: boolean;
+}
+
+export interface AssistantReply {
+  reply: string;
+  actions: AssistantAction[];
+}

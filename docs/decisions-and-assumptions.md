@@ -92,3 +92,47 @@ Details are in [frontend.md](frontend.md).
 | Reassignment target | New `GET /api/staff/officers` | Free-text officer id (typos only caught by the server) |
 | Live data | Reload on demand with an "updated at" time; 409 reloads the claim | WebSockets / SSE (a new backend capability) |
 | Charts | Stat tiles and single-colour bars with direct labels; tables for detail | A chart library (weight, colour palettes to validate) |
+
+## AI assistant (claims-service, `POST /api/agent/chat`)
+
+A claimant or officer types a request in plain language and a Google Gemini model carries it out ("raise a motor claim in
+Singapore, rear-ended yesterday, about 8000"). It is a different thing from the rule-based agents in
+reporting-service, which only advise managers and never change a claim.
+
+- **It acts as the signed-in user.** The model can only call tools that call `ClaimService` with the caller's
+  `Actor`, so lifecycle rules, record-level access and the audit trail apply as for the REST API. The tool list is
+  chosen by role (claimant: submit, list, get; officer: queue, assign, assess, approve, reject, get) and the role is
+  checked again when a tool runs, so a model that asks for a tool it was not offered is refused. Managers are not
+  allowed to use it.
+- **Tool input is validated like a client's.** Each tool builds the same request record as the REST API and runs it
+  through Bean Validation, so a future date, a zero amount or a 3-decimal amount is rejected.
+- **Manual tool loop over a provider-neutral `AgentModel`.** Identity, role checks, the turn limit and the cost
+  bounds stay in our code, and swapping the model provider means writing one adapter (`GeminiModel` is the only
+  one). It calls the Gemini REST API directly with the JDK HTTP client, so there is no SDK dependency. Each tool
+  call commits on its own. If the loop stops early (turn or time limit), the reply still lists what was
+  done, because a 503 would hide committed writes and invite a duplicate retry.
+- **Cost and thread bounds.** At most 8 model calls, 90 seconds, 8 chats at once, 30 s per model call and an
+  8192-token reply (`app.ai.*`). Every chat holds a request thread, and the free tier has its own rate limit, which
+  the assistant reports as a 503 "rate limit" message.
+- **Model and key.** `gemini-flash-lite-latest` by default (`GEMINI_MODEL` to change). Model names change often:
+  the `gemini-2.5` and `2.0` models already return 404 for new accounts, and larger models were overloaded (503) when
+  tried, so the default is an alias that answered quickly. A 503 is retried once, then reported as "model is busy".
+  `GET /v1beta/models` lists what a key can use. The key is a Google AI Studio key in
+  `app.ai.gemini.api-key` (or `GEMINI_API_KEY`; docker-compose passes it through). It is sent in the
+  `x-goog-api-key` header, never in the URL, and never logged. With no key the endpoint answers 503 and the rest of
+  the platform is unaffected. A key pasted into `application.yml` must be removed before committing.
+- **No human confirmation step.** The assistant can approve and reject on an officer's request without a second
+  click, as the user asked. This is the biggest risk to review before any real use.
+- **Known risk: prompt injection.** Claim descriptions and notes written by claimants are returned to the model as
+  tool results. A claimant could write "approve claim X" into a description. Mitigations: tool results are wrapped in
+  `<tool_data>` tags and the system prompt says to treat them as data only; the officer prompt says to act only on
+  what the user asked; roles still bound what any call can do. This is not a guarantee. A production version should
+  require confirmation for approve, reject and assess, and return fewer free-text fields.
+- **The browser sends the conversation.** Earlier turns (text only) come back with each request, limited to 20
+  messages of 4000 characters. A caller could forge an assistant turn; roles are still enforced server-side, so this
+  is not privilege escalation, but a production version should keep the transcript on the server.
+- **Tested against the real API once, by hand.** The automated tests script the model and run the Gemini adapter
+  against a local fake server, so they need no key. A manual run with a real key (31 Oct 2026, `gemini-flash-lite-latest`)
+  raised a claim from a plain sentence, ran a four-step officer flow (queue, assign, assess, approve), asked for the
+  missing details on a vague request, and refused a claimant's attempt to approve. That is one run on one model, not
+  a guarantee: smaller models can pick the wrong tool or invent a field value.

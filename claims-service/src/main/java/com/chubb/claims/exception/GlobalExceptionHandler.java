@@ -56,6 +56,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
+    @ExceptionHandler(AgentUnavailableException.class)
+    ProblemDetail agentUnavailable(AgentUnavailableException e) {
+        if (e.getCause() != null) {
+            log.warn("AI assistant call failed", e);
+        }
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
     @ExceptionHandler(DocumentTooLargeException.class)
     ProblemDetail documentTooLarge(DocumentTooLargeException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.PAYLOAD_TOO_LARGE, e.getMessage());

@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
-  ClaimDetail, ClaimStatus, ClaimSummary, ClaimType, DocumentInfo, HistoryEntry, InfoRequest, Market, Page, SubmitClaim,
+  AssistantReply, ChatMessage, ClaimDetail, ClaimStatus, ClaimSummary, ClaimType, DocumentInfo, HistoryEntry, InfoRequest, Market, Page, SubmitClaim,
 } from '../models';
 
 /** claims-service (system of record): claimant, document and staff endpoints. */
@@ -34,6 +34,13 @@ export class ClaimsApi {
 
   respond(id: string, requestId: string, response: string): Observable<InfoRequest> {
     return this.http.post<InfoRequest>(`/api/claims/${id}/info-requests/${requestId}/response`, { response });
+  }
+
+  // ---------- AI assistant ----------
+
+  /** The assistant runs claim operations as the signed-in user and replies with what it did. */
+  chat(messages: ChatMessage[]): Observable<AssistantReply> {
+    return this.http.post<AssistantReply>('/api/agent/chat', { messages });
   }
 
   // ---------- documents ----------

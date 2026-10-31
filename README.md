@@ -141,6 +141,18 @@ docker compose up --build      # Postgres, Kafka, the three services and the web
 | http://localhost:8082/swagger-ui.html | Reporting API |
 | http://localhost:8083/swagger-ui.html | Notification API |
 
+**AI assistant (optional).** Claimants and officers can ask an AI assistant to do claim work in plain language (menu:
+*AI assistant*). It uses Google Gemini and needs a free key from [aistudio.google.com](https://aistudio.google.com).
+Without one, everything else works and the assistant answers 503.
+
+```bash
+# put the key in claims-service/src/main/resources/application.yml (app.ai.gemini.api-key), or:
+export GEMINI_API_KEY=...      # PowerShell: $env:GEMINI_API_KEY="..."
+docker compose up --build
+```
+
+Never commit a real key.
+
 ### Option 2: Local development
 
 ```bash
@@ -207,6 +219,7 @@ Test catalogue: [docs/testing.md](docs/testing.md) · Measured results: [docs/te
 | Any signed-in user | `GET /api/me` |
 | Claimant | `POST/GET /api/claims` · `GET /api/claims/{id}` · `…/history` · `…/info-requests` · `POST …/info-requests/{rid}/response` · `POST/GET …/documents` · `GET /api/notifications` |
 | Officer | `GET /api/staff/claims/queue` · `GET /api/staff/claims` · `GET /api/staff/officers` · `POST /api/staff/claims/{id}/assign \| info-requests \| assess \| approve \| reject \| settle \| reassign` |
+| Claimant, officer | `POST /api/agent/chat` (AI assistant; acts as the signed-in user; needs a Gemini API key) |
 | Manager | `GET /api/reports/summary \| exposure \| exposure/total \| workload \| performance \| sla-breaches` · read-only staff views · reassign |
 
 - **Errors** use RFC 7807 problem details: 400, 401, 403, 404, 409, 413, 415, 422, 500.

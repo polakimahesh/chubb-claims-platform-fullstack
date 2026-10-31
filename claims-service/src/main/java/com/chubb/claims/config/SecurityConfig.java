@@ -38,6 +38,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/claims/*/info-requests/*/response").hasRole(CLAIMANT)
                 .requestMatchers(HttpMethod.POST, "/api/claims/*/documents").hasRole(CLAIMANT)
                 .requestMatchers(HttpMethod.GET, "/api/claims/**").hasAnyRole(CLAIMANT, OFFICER, MANAGER)
+                // AI assistant: acts as the caller, so claimants and officers only; ClaimService still enforces the rules
+                .requestMatchers(HttpMethod.POST, "/api/agent/chat").hasAnyRole(CLAIMANT, OFFICER)
                 // staff
                 .requestMatchers(HttpMethod.POST, "/api/staff/claims/*/reassign").hasAnyRole(OFFICER, MANAGER)
                 .requestMatchers(HttpMethod.GET, "/api/staff/**").hasAnyRole(OFFICER, MANAGER)

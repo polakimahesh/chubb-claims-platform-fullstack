@@ -29,6 +29,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/claimant/new-claim').then((m) => m.NewClaim),
       },
 
+      // claimant and officer: the AI assistant acts as the signed-in user
+      {
+        path: 'assistant', canActivate: [roleGuard('CLAIMANT', 'OFFICER')], title: 'AI assistant',
+        loadComponent: () => import('./features/assistant/assistant').then((m) => m.Assistant),
+      },
+
       // any role (claimants only ever get their own claim back from the API)
       {
         path: 'claims/:id', title: 'Claim',

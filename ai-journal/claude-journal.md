@@ -272,3 +272,31 @@ the frontend from scratch, keep the backend business logic as it is, and miss no
 - **Challenge:** a single shell heredoc that wrote all the agent files failed to parse, and nothing was written. The
   files were then created one by one.
 - Not yet exercised on a real change; no tests affected.
+
+## 14. AI assistant that acts on claims (prompt 07)
+
+- The user wanted an agent that raises claims and one that accepts or rejects them, with no human step, then asked
+  for the UI to have "an agent create the claim". I first built a browser button that filled the form with random
+  values and submitted it. The user pointed out this was not an AI agent, and I removed it.
+- Built a real assistant in claims-service: `POST /api/agent/chat` runs a hand-written tool loop against a language
+  model. I first wrote it against Claude, then the user had no Anthropic key and asked for Google AI Studio instead,
+  so the loop now sits behind a provider-neutral `AgentModel` with one `GeminiModel` adapter (plain REST, no SDK) and
+  the Anthropic code was removed. The tools call `ClaimService` as the signed-in user, are chosen by role and
+  re-checked on execution. The web app gets an *AI assistant* page for claimants and officers.
+- **Review found real problems, fixed before finishing:** tool input skipped Bean Validation (so the assistant was
+  looser than the REST API); hitting the turn limit returned a 503 although claims had already been created; the
+  model call had no timeout, retry or concurrency bound. Also added `<tool_data>` wrapping and a prompt rule against
+  following text found inside claims, and stricter number parsing.
+- **Challenges:** `@MockitoBean` does not exist in this Spring Boot version, so the tests use `@MockBean`. The Shell
+  navigation spec had been out of date since the Live agents item was added in an earlier commit; fixed here.
+  Testing against the real API found what the fake server could not: the `gemini-2.5` and `2.0` models I had picked
+  return 404 for new accounts, and larger models answered 503 "high demand". The adapter now retries a 503 once and
+  says "model is busy" instead of the misleading "check the API key", and the default is `gemini-flash-lite-latest`.
+- **Real-API run (31 Oct 2026):** raised a claim from one sentence; ran queue, assign, assess, approve in a single
+  officer request (REST then showed APPROVED, assessed 7500); asked for missing details on a vague request; refused
+  a claimant's approve attempt. One run on one model.
+- Tests: backend scripted-model integration tests plus Gemini adapter tests against a local fake server (no key or
+  network), and a frontend spec. Unit 97/97.
+- **Not done:** the Playwright e2e suite was not re-run, OpenAPI and Postman not re-exported, and approve/reject have
+  no confirmation step. Prompt injection is mitigated, not solved; see `docs/decisions-and-assumptions.md`.
+- The user pasted a real key into `application.yml` for a demo. It must be removed and rotated before any commit.
