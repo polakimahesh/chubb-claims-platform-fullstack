@@ -254,3 +254,21 @@ the frontend from scratch, keep the backend business logic as it is, and miss no
   `compose up web` recreating reporting-service and resetting its SLA setting; using `--no-deps` fixed it.
 - Results: unit 91/91; Playwright 37/37 on the dev setup and 37/37 on the Docker production build; axe accessibility
   scans pass in both themes with the new palette.
+
+## 13. Project AI agents (prompt 06)
+
+- The user asked how to create AI agents (in Claude Code and in Cursor), then asked for agents for this project, and
+  said not to commit them.
+- Five Claude Code subagents were added under `.claude/agents/`. Each one encodes the CLAUDE.md invariants for a
+  recurring task:
+  - `contract-drift-checker` (read-only): checks the backend against `core/models.ts`, `core/reference.ts`, the
+    validators, the fixtures, OpenAPI and Postman.
+  - `backend-reviewer` (read-only): lifecycle and access rules, outbox, idempotent consumers, documents, portable
+    Flyway SQL.
+  - `test-runner`: picks the narrowest Gradle, Vitest or Playwright suite and triages failures.
+  - `docs-keeper`: updates decisions, README, the journal and prompts, without inventing history.
+  - `api-sync`: re-exports OpenAPI, updates the Postman generator and runs newman.
+- Cursor rules and commands were also drafted, then removed when the user said to keep this to Claude Code only.
+- **Challenge:** a single shell heredoc that wrote all the agent files failed to parse, and nothing was written. The
+  files were then created one by one.
+- Not yet exercised on a real change; no tests affected.

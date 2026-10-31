@@ -59,6 +59,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/manager/team').then((m) => m.Team),
       },
       {
+        path: 'agents', canActivate: [roleGuard('MANAGER')], title: 'Live agents',
+        loadComponent: () => import('./features/manager/agents').then((m) => m.Agents),
+      },
+      {
         path: 'sla', canActivate: [roleGuard('MANAGER')], title: 'SLA breaches',
         loadComponent: () => import('./features/manager/sla').then((m) => m.Sla),
       },
