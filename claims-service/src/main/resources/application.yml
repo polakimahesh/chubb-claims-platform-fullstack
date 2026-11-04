@@ -38,6 +38,17 @@ management:
         include: health,info
 
 app:
+  ai:
+    # The AI assistant calls a language model. Without a key the endpoint answers 503; everything else works as before.
+    gemini:
+      # Google AI Studio key (aistudio.google.com). For local use paste it after the colon below, e.g.
+      # api-key: ${GEMINI_API_KEY:AIza...}, or set GEMINI_API_KEY. NEVER commit a real key.
+      api-key: ${GEMINI_API_KEY:}   # TEMPORARY demo key: delete before committing
+      model: ${GEMINI_MODEL:gemini-flash-lite-latest}   # model names change: GET /v1beta/models lists what your key can use
+    max-turns: 8           # model calls per chat
+    max-seconds: 90          # wall-clock limit per chat
+    max-concurrent: 8        # chats running at once; each holds a request thread and spends money
+    timeout-seconds: 30      # per model call
   documents:
     dir: ${DOCUMENTS_DIR:${java.io.tmpdir}/claims-documents}   # local filesystem store; swap DocumentStorage for S3/Blob
   security:
